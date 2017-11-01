@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        .waterfall {
+            width: 800px;
+            margin: 0 auto;
+        }
+        .waterfall .wf-col {
+            float: left;
+            width: 180px;
+            margin: 0 10px;
+        }
+        .waterfall .wf-col .img-wrap {
+            width: 180px;
+        }
+        .waterfall .wf-col .img-wrap img{
+            width: 160px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <ul class="waterfall">
+        <li class="wf-col">
+            <!--<div class="img-wrap"><img src="1.jpg"></div>-->
+        </li>
+        <li class="wf-col">
+            <!--<div class="img-wrap"><img src="1.jpg"></div>-->
+        </li>
+        <li class="wf-col">
+            <!--<div class="img-wrap"><img src="1.jpg"></div>-->
+        </li>
+        <li class="wf-col">
+            <!--<div class="img-wrap"><img src="1.jpg"></div>-->
+        </li>
+    </ul>
+    <script src="ajax.js"></script>
+    <script>
+        var $li = document.getElementsByTagName('li'),
+            pageNum = 1,
+            bLoading = false,
+            getMinColumn = function(){
+                var minHeight = $li[0].offsetHeight,
+                    curHeight,
+                    minIndex = 0;
+                for(var i = 1, len = $li.length; i < len; i++){
+                    curHeight = $li[i].offsetHeight;
+                    if(minHeight > curHeight){
+                        minHeight = curHeight;
+                        minIndex = i;
+                    }
+                }
+                return minIndex;
+            }
+            addImg = function(data){         
+                var dataArr = JSON.parse(data),
+                    minIndex;
+                for(var i = 0, len = dataArr.length; i < len; i++){
+                    var newImgWrap = document.createElement('div'),
+                        newImg = document.createElement('img');
+                    newImgWrap.className = 'img-wrap';
+                    newImgWrap.style.height = parseInt(dataArr[i].height / dataArr[i].width * 180) + 'px';
+                    newImg.src = dataArr[i].preview;
+                    newImgWrap.appendChild(newImg);
+                    minIndex = getMinColumn();
+                    $li[minIndex].appendChild(newImgWrap);
+                }
+                bLoading = false;
+            },
+            requestImg = function(){
+                AJAX('GET', 'getPics.php', true, '?cpage=' + pageNum++, addImg);
+            };
+        
+        requestImg();
+        
+        window.onscroll = function(){
+            var srollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                clientHeight = document.documentElement.clientHeight || document.body.clientHeight,
+                minHeight = $li[getMinColumn()].offsetHeight;
+            if(srollTop + clientHeight > minHeight && bLoading === false){
+                bLoading = true;
+                requestImg();
+            }
+        }
+    </script>    
+</body>
+</html>
